@@ -61,30 +61,7 @@ Typen:
 * Rohdaten → data/raw/
 * Verarbeitete Daten → data/processed/
 * Rohdaten werden nicht überschrieben
-* Große Daten werden nicht in Git gespeichert
 * Datenquellen werden dokumentiert
-
----
-
-## Notebooks
-
-* Jedes Notebook enthält:
-    1. Ziel der Analyse
-    2. Beschreibung der Daten
-    3. Visualisierung
-    4. Modell
-    5. Prognose
-    6. Interpretation
-
-
----
-
-## Modelle
-* Jede Person erstellt ein univariates Modell
-* Modelle müssen begründet werden
-* Ergebnisse werden visualisiert
-* Prognosen werden interpretiert
-
 
 ---
 
