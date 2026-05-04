@@ -35,17 +35,12 @@ Dieses Repository enthält die Ergebnisse einer uni- und multivariaten Zeitreihe
 ├── data/
 │   ├── raw/            # Originale Rohdaten (nicht im Repo enthalten)
 │   └── processed/      # Bereinigte / transformierte Daten
-├── notebooks/
-│   ├── Aida Halimi/                 # Notebooks von Person 1
-│   ├── Wladislaw Saydullaev/        # Notebooks von Person 2
-│   └── Mehmet Bekler/               # Notebooks von Person 3
-├── src/                # Wiederverwendbare Python-Module
-│   ├── __init__.py
-│   ├── data_loader.py
-│   └── evaluation.py
+│
 ├── results/
 │   ├── plots/          # Grafiken (ACF, PACF, Forecasts)
 │   └── metrics/        # Evaluationsmetriken
+│
+├── ts_menden_team03.ipynb
 ├── .gitignore
 ├── README.md
 ├── CONTRIBUTING.md
