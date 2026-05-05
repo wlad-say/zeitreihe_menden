@@ -20,15 +20,14 @@ Dieses Repository enthält die Ergebnisse einer uni- und multivariaten Zeitreihe
 ---
 
 ## Gruppe
-
-| Name | Zeitreihe | Branch |
-|------|-----------|--------|
-| Aida Halimi          | _wird ergänzt_ | `feature/person1-...` |
-| Wladislaw Saydullaev | _wird ergänzt_ | `feature/person2-...` |
-| Mehmet Bekler        | _wird ergänzt_ | `feature/person3-...` |
-
+ 
+| Name | Aufgabe | Zeitreihe | Branch |
+|------|---------|-----------|--------|
+| Aida Halimi          | Deskriptive Analyse | Amazon Sales (Umsatzdaten) | `feature/person1-amazon`  |
+| Wladislaw Saydullaev | Datenvisualisierung | Weather (Wetterdaten)      | `feature/person2-weather` |
+| Mehmet Bekler        | Datenaufbereitung   | Apple Stock (Aktienkurse)  | `feature/person3-apple`   |
+ 
 ---
-
 ## Projektstruktur
 
 ```
@@ -71,7 +70,7 @@ Dieses Repository enthält die Ergebnisse einer uni- und multivariaten Zeitreihe
    python -m venv venv
    venv\Scripts\activate
 
-   # Mac / Linux
+   # Mac / Windows
    python -m venv venv
    source venv/bin/activate
    ```
@@ -112,11 +111,11 @@ Alle Dependencies mit Versionen: siehe [`requirements.txt`](requirements.txt)
 
 Die Zeitreihen wurden selbstständig recherchiert und heruntergeladen. Die Rohdaten befinden sich **nicht** im Repository, da sie zu groß sind oder unter Lizenzbestimmungen stehen. Die genaue Quelle ist jeweils im Notebook der zuständigen Person dokumentiert.
 
-| Person | Datenquelle | Zeitraum | Frequenz |
-|--------|------------|---------|---------|
-| AH     | _wird ergänzt_ | _wird ergänzt_ | _wird ergänzt_ |
-| WS     | _wird ergänzt_ | _wird ergänzt_ | _wird ergänzt_ |
-| MB     | _wird ergänzt_ | _wird ergänzt_ | _wird ergänzt_ |
+| Person | Datenquelle   | Zeitraum                  | Frequenz               |
+|--------|---------------|---------------------------|------------------------|
+| AH     | Kaggle        | 2022-04-13 - 2023-06-29   | Irregularität          |
+| WS     | Kaggle        | 01.01.2009 - 01.01.2017   | Zehn-Minuten Intervall |
+| MB     | Yahoo Finance | 2016-01-04 - 2026-04-30   | Täglich                |
 
 ---
 
