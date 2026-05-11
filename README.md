@@ -23,7 +23,7 @@ Dieses Repository enthält die Ergebnisse einer uni- und multivariaten Zeitreihe
  
 | Name | Aufgabe | Zeitreihe | Branch |
 |------|---------|-----------|--------|
-| Aida Halimi          | Deskriptive Analyse | Amazon Sales (Umsatzdaten) | `feature/person1-amazon`  |
+| Aida Halimi          | Deskriptive Analyse | Gold Price (Goldpreise)    | `feature/person1-goldprice`  |
 | Wladislaw Saydullaev | Datenvisualisierung | Weather (Wetterdaten)      | `feature/person2-weather` |
 | Mehmet Bekler        | Datenaufbereitung   | Apple Stock (Aktienkurse)  | `feature/person3-apple`   |
  
@@ -113,7 +113,7 @@ Die Zeitreihen wurden selbstständig recherchiert und heruntergeladen. Die Rohda
 
 | Person | Datenquelle   | Zeitraum                  | Frequenz               |
 |--------|---------------|---------------------------|------------------------|
-| AH     | Kaggle        | 2022-04-13 - 2023-06-29   | Irregularität          |
+| AH     | Kaggle        | 2011-01-03 - 2020-09-11   | Täglich                |
 | WS     | Kaggle        | 01.01.2009 - 01.01.2017   | Zehn-Minuten Intervall |
 | MB     | Yahoo Finance | 2016-01-04 - 2026-04-30   | Täglich                |
 
