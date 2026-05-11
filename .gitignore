@@ -14,8 +14,10 @@ build/
 .idea/
 # OS
 Thumbs.db
-
 # Daten
 data/raw/
 data/processed/*
 !data/processed/.gitkeep
+# Python cache
+__pycache__/
+*.pyc
