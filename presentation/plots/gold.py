@@ -423,4 +423,3 @@ def build(df_gold: pd.DataFrame) -> dict:
             "jb_stat": jb_stat,
         },
     }
-```
