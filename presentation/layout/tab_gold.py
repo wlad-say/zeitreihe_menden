@@ -201,7 +201,4 @@ def render(data: dict) -> html.Div:
         ),
 
     ])
-```
-
----
 
