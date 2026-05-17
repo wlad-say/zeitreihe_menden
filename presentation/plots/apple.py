@@ -51,9 +51,9 @@ def build(df_apple: pd.DataFrame) -> dict:
     df = df_apple.copy()
 
     # ── 1 · Close-Preis ─────────────────────────────────────────────────────
-    fig, ax = plt.subplots(figsize=(13, 4))
-    ax.plot(df.index, df["Close"], color="steelblue", linewidth=0.9)
-    ax.set_title("Apple Aktienkurs – Close-Preis", fontweight="bold")
+    fig, ax = plt.subplots(figsize=(14, 5))
+    ax.plot(df.index, df["Close"], color="steelblue", linewidth=1)
+    ax.set_title("Apple Aktienkurs (Close-Preis)", fontsize=14, fontweight="bold")
     ax.set_ylabel("Preis (USD)")
     ax.set_xlabel("Datum")
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
@@ -61,10 +61,10 @@ def build(df_apple: pd.DataFrame) -> dict:
     p_close = fig_to_b64(fig)
 
     # ── 2 · Log-Returns ──────────────────────────────────────────────────────
-    fig, ax = plt.subplots(figsize=(13, 4))
-    ax.plot(df.index, df["Log_Return"], color="steelblue", linewidth=0.55)
+    fig, ax = plt.subplots(figsize=(14, 4))
+    ax.plot(df.index, df["Log_Return"], color="darkorange", linewidth=0.8)
     ax.axhline(0, color="black", linewidth=0.8, linestyle="--")
-    ax.set_title("Apple – Log-Returns (tägliche Renditen)", fontweight="bold")
+    ax.set_title("Log-Returns (transformiert — stationär)", fontsize=14, fontweight="bold")
     ax.set_ylabel("Log-Return")
     ax.set_xlabel("Datum")
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
@@ -72,68 +72,73 @@ def build(df_apple: pd.DataFrame) -> dict:
     p_lr = fig_to_b64(fig)
 
     # ── 3 · ACF & PACF ───────────────────────────────────────────────────────
-    fig, axes = plt.subplots(1, 2, figsize=(13, 4))
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
     plot_acf(df["Log_Return"], lags=40, ax=axes[0], color="steelblue")
-    axes[0].set_title("ACF – Log-Returns")
-    plot_pacf(df["Log_Return"], lags=40, ax=axes[1], color="#e07b39", method="ywm")
-    axes[1].set_title("PACF – Log-Returns")
+    axes[0].set_title("ACF der Log-Returns", fontweight="bold")
+    axes[0].set_xlabel("Lag")
+    plot_pacf(df["Log_Return"], lags=40, ax=axes[1], color="darkorange", method="ywm")
+    axes[1].set_title("PACF der Log-Returns", fontweight="bold")
+    axes[1].set_xlabel("Lag")
     plt.tight_layout()
     p_acf = fig_to_b64(fig)
 
-    # ── Modell: ARIMAX(0,0,1) ────────────────────────────────────────────────
+    # ── Modell: ARIMA(2,0,2) ─────────────────────────────────────────────────
     split = int(len(df) * 0.8)
     train = df.iloc[:split]
     test  = df.iloc[split:]
 
-    model = ARIMA(train["Log_Return"], exog=train[["Log_Volume"]], order=(0, 0, 1)).fit()
+    model = ARIMA(train["Log_Return"], order=(2, 0, 2)).fit()
     residuals = model.resid
 
     # ── 4 · Residualanalyse ───────────────────────────────────────────────────
-    fig, axes = plt.subplots(2, 2, figsize=(13, 7))
-    axes[0, 0].plot(residuals, color="steelblue", linewidth=0.6)
+    fig, axes = plt.subplots(2, 2, figsize=(14, 8))
+    axes[0, 0].plot(residuals, color="steelblue", linewidth=0.8)
     axes[0, 0].axhline(0, color="black", linestyle="--", linewidth=0.8)
-    axes[0, 0].set_title("Residuen über Zeit", fontweight="bold")
+    axes[0, 0].set_title("Residuen über Zeit – ARIMA(2,0,2)", fontweight="bold")
     axes[0, 1].hist(residuals, bins=50, color="steelblue", alpha=0.7, edgecolor="white")
     axes[0, 1].set_title("Histogramm der Residuen", fontweight="bold")
     plot_acf(residuals, lags=40, ax=axes[1, 0], color="steelblue")
-    axes[1, 0].set_title("ACF der Residuen", fontweight="bold")
-    plot_pacf(residuals, lags=40, ax=axes[1, 1], color="#e07b39", method="ywm")
-    axes[1, 1].set_title("PACF der Residuen", fontweight="bold")
-    plt.suptitle("Residualanalyse – ARIMAX(0,0,1)", fontweight="bold", y=1.01)
+    axes[1, 0].set_title("ACF der Residuen (reoptimiert)", fontweight="bold")
+    plot_pacf(residuals, lags=40, ax=axes[1, 1], color="darkorange", method="ywm")
+    axes[1, 1].set_title("PACF der Residuen (reoptimiert)", fontweight="bold")
+    plt.suptitle("Residualanalyse – ARIMA(2,0,2) (reoptimiert)", fontsize=13, fontweight="bold", y=1.01)
     plt.tight_layout()
     p_resid = fig_to_b64(fig)
 
     # ── 5 · Testset-Evaluation ────────────────────────────────────────────────
-    preds = model.forecast(steps=len(test), exog=test[["Log_Volume"]])
+    preds = model.forecast(steps=len(test))
     preds.index = test.index
     mae  = mean_absolute_error(test["Log_Return"], preds)
     rmse = np.sqrt(mean_squared_error(test["Log_Return"], preds))
 
-    fig, ax = plt.subplots(figsize=(13, 4))
+    fig, ax = plt.subplots(figsize=(14, 4))
     ax.plot(test.index, test["Log_Return"],
-            color="steelblue", linewidth=0.8, label="Tatsächlich")
+            color="steelblue", linewidth=0.8, alpha=0.85, label="Tatsächlich")
     ax.plot(preds.index, preds,
-            color="#e07b39", linewidth=1.5, linestyle="--", label="Prognose ARIMAX(0,0,1)")
+            color="darkorange", linewidth=1.5, linestyle="--",
+            alpha=0.9, label="ARIMA(2,0,2) Prognose")
     ax.axhline(0, color="gray", linewidth=0.6, linestyle=":")
+    ax.axvline(pd.Timestamp("2025-04-07"), color="red", linewidth=1.2,
+               linestyle="--", alpha=0.7, label="Trump-Zollschock (Apr 2025)")
     ax.set_title(
-        f"Testset – Tatsächlich vs. Prognose   "
-        f"MAE = {mae:.5f}   RMSE = {rmse:.5f}",
-        fontweight="bold",
+        "Testset – Tatsächliche vs. vorhergesagte Log-Returns\n"
+        "(Flache Prognose ≈ 0 ist korrekt: Aktienkurse folgen einem Random Walk)",
+        fontsize=12, pad=12,
     )
     ax.set_ylabel("Log-Return")
     ax.set_xlabel("Datum")
     ax.legend()
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+    plt.xticks(rotation=30)
     plt.tight_layout()
     p_test = fig_to_b64(fig)
 
     # ── 6 · 10-Tage-Forecast ─────────────────────────────────────────────────
-    full_model = ARIMA(df["Log_Return"], exog=df[["Log_Volume"]], order=(0, 0, 1)).fit()
-    avg_vol    = df["Log_Volume"].iloc[-30:].mean()
-    exog_fc    = pd.DataFrame({"Log_Volume": [avg_vol] * 10})
-    fc_obj     = full_model.get_forecast(steps=10, exog=exog_fc)
-    fc_mean    = fc_obj.predicted_mean
-    fc_ci      = fc_obj.conf_int(alpha=0.05)
+    full_model  = ARIMA(df["Log_Return"], order=(2, 0, 2)).fit()
+    fc_obj      = full_model.get_forecast(steps=10)
+    fc_mean     = fc_obj.predicted_mean
+    fc_ci       = fc_obj.conf_int(alpha=0.05)
 
     fc_dates = pd.bdate_range(start=df.index[-1] + pd.Timedelta(days=1), periods=10)
     fc_mean.index = fc_ci.index = fc_dates
@@ -153,24 +158,28 @@ def build(df_apple: pd.DataFrame) -> dict:
     ci_lo_b  = np.concatenate([[letzter], ci_lo])
     ci_hi_b  = np.concatenate([[letzter], ci_hi])
 
-    fig, ax = plt.subplots(figsize=(13, 4.5))
+    fig, ax = plt.subplots(figsize=(14, 5))
     ax.plot(hist60.index, hist60.values,
-            color="steelblue", linewidth=1.5, label="Historisch (60 Tage)")
-    ax.axvline(df.index[-1], color="gray", linewidth=0.8, linestyle="--", label="Heute")
+            color="steelblue", linewidth=1.5,
+            label="Historischer Kurs (letzte 60 Tage)")
+    ax.axvline(df.index[-1], color="gray", linewidth=0.8, linestyle="--",
+               alpha=0.7, label="Heute")
     ax.fill_between(bridge_x, ci_lo_b, ci_hi_b,
-                    alpha=0.25, color="#e07b39", label="95%-Konfidenzintervall")
+                    alpha=0.25, color="darkorange", label="95%-Konfidenzintervall")
     ax.plot(bridge_x, bridge_y,
-            color="#e07b39", linewidth=2, linestyle="--", label="Prognose (Mittelpfad)")
+            color="darkorange", linewidth=1.8, linestyle="--", label="Prognose (Mittelpfad)")
     ax.plot(df.index[-1], letzter, "o", color="steelblue", markersize=6, zorder=5)
     ax.set_title(
-        f"10-Tage-Kurs-Prognose – ARIMAX(0,0,1)   "
-        f"Letzter Kurs: ${letzter:.2f}   Prognose: ${fc_preise[-1]:.2f}",
-        fontweight="bold",
+        "Apple-Kurs – 10-Tage-Prognose mit 95%-Konfidenzintervall\n"
+        "(ARIMA(2,0,2) — trainiert auf allen verfügbaren Daten)",
+        fontsize=13, pad=12,
     )
     ax.set_ylabel("Kurs (USD)")
     ax.set_xlabel("Datum")
     ax.legend(loc="upper left")
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%d"))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
+    ax.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
+    plt.xticks(rotation=30)
     plt.tight_layout()
     p_fc = fig_to_b64(fig)
 
