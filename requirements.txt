@@ -1,6 +1,20 @@
-pandas
+# Core Data Science
 numpy
+pandas
+
+# Visualisation 
 matplotlib
 seaborn
-scikit-learn
+
+# Statistics & Time-Series
 statsmodels
+scipy
+
+# Machine Learning 
+scikit-learn
+
+# Forecasting
+prophet
+
+# ── Dashboard / Presentation ──────────────────────────────────────────────────
+dash
