@@ -2,6 +2,11 @@
 plots/weather.py
 Berechnet alle Plots und Modelle für den Weather-Tab.
 Modell: SARIMAX(3,0,0) mit Fourier-Terms (K=3, Periode=365.25).
+
+Neu (v2):
+  - Koeffiziententabelle (AR-Parameter + p-Werte)
+  - Walk-Forward Validation (6 Folds, ARIMA vs. Prophet vs. Seasonal Naive)
+  - Walk-Forward Boxplots (RMSE & MAE)
 """
 
 import warnings
@@ -99,6 +104,20 @@ def build(df_weather: pd.DataFrame) -> dict:
     residuals = model.resid
     lb_p = acorr_ljungbox(residuals, lags=[30], return_df=True)["lb_pvalue"].values[0]
 
+    # ── NEU: Koeffizienten extrahieren ────────────────────────────────────────
+    params  = model.params
+    pvalues = model.pvalues
+    ar_rows = []
+    for lag in [1, 2, 3]:
+        key = f"ar.L{lag}"
+        if key in params.index:
+            ar_rows.append((
+                f"AR(L{lag})",
+                f"{params[key]:+.4f}",
+                f"{pvalues[key]:.4f}",
+                "✓" if pvalues[key] < 0.05 else "✗",
+            ))
+
     # ── 4 · Residualanalyse ───────────────────────────────────────────────────
     fig, axes = plt.subplots(2, 2, figsize=(13, 7))
     residuals.plot(ax=axes[0, 0], color="steelblue")
@@ -179,6 +198,108 @@ def build(df_weather: pd.DataFrame) -> dict:
     plt.tight_layout()
     p_fc = fig_to_b64(fig)
 
+    # ── 7 · NEU: Walk-Forward Validation (6 Folds) ───────────────────────────
+    H       = 10
+    n_folds = 6
+    step    = 60
+    fold_test_ends = sorted([len(series) - i * step for i in range(n_folds)])
+
+    wf_results = []
+    for fold_idx, test_end_idx in enumerate(fold_test_ends, start=1):
+        train_end_idx = test_end_idx - H
+        tr_sl = series.iloc[:train_end_idx]
+        te_sl = series.iloc[train_end_idx:test_end_idx]
+
+        exog_tr_sl = _fourier(tr_sl.index, period=365.25, K=3)
+        exog_te_sl = _fourier(te_sl.index, period=365.25, K=3)
+
+        # ARIMA
+        m_arima  = SARIMAX(tr_sl, order=(3, 0, 0), exog=exog_tr_sl,
+                           trend="c", enforce_stationarity=False).fit(disp=False)
+        fc_arima = m_arima.forecast(steps=H, exog=exog_te_sl)
+        rmse_arima = np.sqrt(mean_squared_error(te_sl, fc_arima))
+        mae_arima  = mean_absolute_error(te_sl, fc_arima)
+
+        # Seasonal Naive (Lag 365)
+        fc_naive   = series.iloc[train_end_idx - 365:test_end_idx - 365].values
+        rmse_naive = np.sqrt(mean_squared_error(te_sl.values, fc_naive))
+        mae_naive  = mean_absolute_error(te_sl.values, fc_naive)
+
+        # Prophet (optional – nur wenn installiert)
+        try:
+            from prophet import Prophet
+            tr_prop = tr_sl.reset_index().rename(
+                columns={tr_sl.index.name or "index": "ds", "T_mean_degC": "y"}
+            )
+            m_prop  = Prophet(yearly_seasonality=True, weekly_seasonality=True,
+                              daily_seasonality=False, interval_width=0.95)
+            m_prop.fit(tr_prop)
+            future   = m_prop.make_future_dataframe(periods=H)
+            fc_prop  = m_prop.predict(future).tail(H)["yhat"].values
+            rmse_prop = np.sqrt(mean_squared_error(te_sl.values, fc_prop))
+            mae_prop  = mean_absolute_error(te_sl.values, fc_prop)
+        except Exception:
+            rmse_prop = np.nan
+            mae_prop  = np.nan
+
+        wf_results.append({
+            "Fold":         fold_idx,
+            "Test-Start":   te_sl.index.min().date(),
+            "Test-Ende":    te_sl.index.max().date(),
+            "ARIMA_RMSE":   round(rmse_arima, 3),
+            "Prophet_RMSE": round(rmse_prop, 3) if not np.isnan(rmse_prop) else None,
+            "SNaive_RMSE":  round(rmse_naive, 3),
+            "ARIMA_MAE":    round(mae_arima, 3),
+            "Prophet_MAE":  round(mae_prop, 3) if not np.isnan(mae_prop) else None,
+            "SNaive_MAE":   round(mae_naive, 3),
+        })
+
+    wf_df = pd.DataFrame(wf_results)
+
+    # Walk-Forward Mittelwerte (für results_table im Tab)
+    wf_means = {
+        "arima_rmse":  round(wf_df["ARIMA_RMSE"].mean(), 3),
+        "arima_mae":   round(wf_df["ARIMA_MAE"].mean(), 3),
+        "naive_rmse":  round(wf_df["SNaive_RMSE"].mean(), 3),
+        "naive_mae":   round(wf_df["SNaive_MAE"].mean(), 3),
+    }
+    prophet_available = wf_df["Prophet_RMSE"].notna().all()
+    if prophet_available:
+        wf_means["prophet_rmse"] = round(wf_df["Prophet_RMSE"].mean(), 3)
+        wf_means["prophet_mae"]  = round(wf_df["Prophet_MAE"].mean(), 3)
+
+    # Walk-Forward Boxplots
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+    rmse_cols = ["ARIMA_RMSE", "SNaive_RMSE"]
+    mae_cols  = ["ARIMA_MAE",  "SNaive_MAE"]
+    rmse_labels = ["ARIMA(3,0,0)\n+Fourier", "Seasonal Naive"]
+    mae_labels  = ["ARIMA(3,0,0)\n+Fourier", "Seasonal Naive"]
+
+    if prophet_available:
+        rmse_cols.insert(1, "Prophet_RMSE")
+        mae_cols.insert(1, "Prophet_MAE")
+        rmse_labels.insert(1, "Prophet")
+        mae_labels.insert(1, "Prophet")
+
+    wf_df[rmse_cols].boxplot(ax=axes[0])
+    axes[0].set_xticklabels(rmse_labels)
+    axes[0].set_ylabel("RMSE (°C)")
+    axes[0].set_title("Walk-Forward Validation – RMSE (6 Folds)")
+    axes[0].grid(axis="y", alpha=0.3)
+
+    wf_df[mae_cols].boxplot(ax=axes[1])
+    axes[1].set_xticklabels(mae_labels)
+    axes[1].set_ylabel("MAE (°C)")
+    axes[1].set_title("Walk-Forward Validation – MAE (6 Folds)")
+    axes[1].grid(axis="y", alpha=0.3)
+
+    plt.suptitle(
+        "ARIMA(3,0,0)+Fourier vs. Vergleichsmodelle — 6 Expanding-Window-Folds",
+        fontweight="bold", y=1.02,
+    )
+    plt.tight_layout()
+    p_wf = fig_to_b64(fig)
+
     return {
         "plots": {
             "ts":    p_ts,
@@ -187,10 +308,14 @@ def build(df_weather: pd.DataFrame) -> dict:
             "resid": p_resid,
             "test":  p_test,
             "fc":    p_fc,
+            "wf":    p_wf,          # NEU
         },
         "metrics": {
-            "mae":    mae,
-            "rmse":   rmse,
-            "lb_p":   lb_p,
+            "mae":              mae,
+            "rmse":             rmse,
+            "lb_p":             lb_p,
+            "ar_rows":          ar_rows,          # NEU: [(label, coef, pval, sig), ...]
+            "wf_means":         wf_means,          # NEU: Mittelwerte Walk-Forward
+            "prophet_available": prophet_available, # NEU
         },
     }
