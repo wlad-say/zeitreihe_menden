@@ -35,11 +35,16 @@ Dieses Repository enthält die Ergebnisse einer uni- und multivariaten Zeitreihe
 │   ├── raw/            # Originale Rohdaten (nicht im Repo enthalten)
 │   └── processed/      # Bereinigte / transformierte Daten
 │
-├── results/
-│   ├── plots/          # Grafiken (ACF, PACF, Forecasts)
-│   └── metrics/        # Evaluationsmetriken
+├── presentation/
+│   ├── layout/ # Grafik
+│   ├── plots/  # Evaluationsmetriken / Grafiken (ACF, PACF, Forecasts)
+│   ├── app.py
+│   ├── data_loader.py          
+│   └── README.md        
 │
 ├── ts_menden_team03.ipynb
+├── preprocess.py
+├── stationary_report.py
 ├── .gitignore
 ├── README.md
 ├── CONTRIBUTING.md
@@ -87,6 +92,8 @@ Dieses Repository enthält die Ergebnisse einer uni- und multivariaten Zeitreihe
 
 5. Notebooks in VS Code öffnen und Kernel `venv` auswählen.
 
+6. ggf. muss man wenn man eine neuere Version von Python verwendet (python3 o. pip3) ergänzen.
+
 ---
 
 ## Dependencies
@@ -102,6 +109,7 @@ Die wichtigsten verwendeten Libraries:
 | `pmdarima` | Automatische ARIMA-Modellselektion |
 | `scikit-learn` | Evaluationsmetriken |
 | `jupyter` | Notebooks |
+| `dash` | Präsentation |
 
 Alle Dependencies mit Versionen: siehe [`requirements.txt`](requirements.txt)
 

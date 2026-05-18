@@ -16,5 +16,5 @@ scikit-learn
 # Forecasting
 prophet
 
-# ── Dashboard / Presentation ──────────────────────────────────────────────────
+# Dashboard / Presentation 
 dash
