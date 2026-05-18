@@ -20,15 +20,14 @@ Dieses Repository enthält die Ergebnisse einer uni- und multivariaten Zeitreihe
 ---
 
 ## Gruppe
-
-| Name | Zeitreihe | Branch |
-|------|-----------|--------|
-| Aida Halimi          | _wird ergänzt_ | `feature/person1-...` |
-| Wladislaw Saydullaev | _wird ergänzt_ | `feature/person2-...` |
-| Mehmet Bekler        | _wird ergänzt_ | `feature/person3-...` |
-
+ 
+| Name | Aufgabe | Zeitreihe | Branch |
+|------|---------|-----------|--------|
+| Aida Halimi          | Deskriptive Analyse | Gold Price (Goldpreise)    | `feature/person1-goldprice`  |
+| Wladislaw Saydullaev | Datenvisualisierung | Weather (Wetterdaten)      | `feature/person2-weather` |
+| Mehmet Bekler        | Datenaufbereitung   | Apple Stock (Aktienkurse)  | `feature/person3-apple`   |
+ 
 ---
-
 ## Projektstruktur
 
 ```
@@ -36,11 +35,16 @@ Dieses Repository enthält die Ergebnisse einer uni- und multivariaten Zeitreihe
 │   ├── raw/            # Originale Rohdaten (nicht im Repo enthalten)
 │   └── processed/      # Bereinigte / transformierte Daten
 │
-├── results/
-│   ├── plots/          # Grafiken (ACF, PACF, Forecasts)
-│   └── metrics/        # Evaluationsmetriken
+├── presentation/
+│   ├── layout/ # Grafik
+│   ├── plots/  # Evaluationsmetriken / Grafiken (ACF, PACF, Forecasts)
+│   ├── app.py
+│   ├── data_loader.py          
+│   └── README.md        
 │
 ├── ts_menden_team03.ipynb
+├── preprocess.py
+├── stationary_report.py
 ├── .gitignore
 ├── README.md
 ├── CONTRIBUTING.md
@@ -71,7 +75,7 @@ Dieses Repository enthält die Ergebnisse einer uni- und multivariaten Zeitreihe
    python -m venv venv
    venv\Scripts\activate
 
-   # Mac / Linux
+   # Mac / Windows
    python -m venv venv
    source venv/bin/activate
    ```
@@ -88,6 +92,8 @@ Dieses Repository enthält die Ergebnisse einer uni- und multivariaten Zeitreihe
 
 5. Notebooks in VS Code öffnen und Kernel `venv` auswählen.
 
+6. ggf. muss man wenn man eine neuere Version von Python verwendet (python3 o. pip3) ergänzen.
+
 ---
 
 ## Dependencies
@@ -103,6 +109,7 @@ Die wichtigsten verwendeten Libraries:
 | `pmdarima` | Automatische ARIMA-Modellselektion |
 | `scikit-learn` | Evaluationsmetriken |
 | `jupyter` | Notebooks |
+| `dash` | Präsentation |
 
 Alle Dependencies mit Versionen: siehe [`requirements.txt`](requirements.txt)
 
@@ -112,11 +119,11 @@ Alle Dependencies mit Versionen: siehe [`requirements.txt`](requirements.txt)
 
 Die Zeitreihen wurden selbstständig recherchiert und heruntergeladen. Die Rohdaten befinden sich **nicht** im Repository, da sie zu groß sind oder unter Lizenzbestimmungen stehen. Die genaue Quelle ist jeweils im Notebook der zuständigen Person dokumentiert.
 
-| Person | Datenquelle | Zeitraum | Frequenz |
-|--------|------------|---------|---------|
-| AH     | _wird ergänzt_ | _wird ergänzt_ | _wird ergänzt_ |
-| WS     | _wird ergänzt_ | _wird ergänzt_ | _wird ergänzt_ |
-| MB     | _wird ergänzt_ | _wird ergänzt_ | _wird ergänzt_ |
+| Person | Datenquelle   | Zeitraum                  | Frequenz               |
+|--------|---------------|---------------------------|------------------------|
+| AH     | Kaggle        | 2011-01-03 - 2020-09-11   | Täglich                |
+| WS     | Kaggle        | 01.01.2009 - 01.01.2017   | Zehn-Minuten Intervall |
+| MB     | Yahoo Finance | 2016-01-04 - 2026-04-30   | Täglich                |
 
 ---
 
