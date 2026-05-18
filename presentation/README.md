@@ -49,7 +49,7 @@ presentation/
 
 | Tab | Inhalt |
 |-----|--------|
-| Apple Stock | Close-Preis · Log-Returns · ACF/PACF · ARIMAX(0,0,1) · Residuen · Testset · Forecast |
+| Apple Stock | Close-Preis · Log-Returns · ACF/PACF · ARIMA(2,0,2) · Residuen · Testset · Forecast |
 | Wetterdaten | Zeitreihe · EDA · ACF/PACF · ARIMA(3,0,0)+Fourier · Residuen · Testset · Forecast |
 | Goldpreis | Zeitreihe · Stationarität · Log-Returns · ARIMA(2,1,2) · Residuen · Forecast |
 | VAR-Analyse | Gemeinsamer Datensatz · Korrelation · IRF · FEVD · Residuen · Forecast |
